@@ -1,27 +1,48 @@
-import React from "react";
+// src/app/(main)/products/[productId]/page.tsx
+import Link from 'next/link'; // Asegúrate que Link esté importado
+import { getProductById, Product } from '@/lib/data/products';
+import ProductDetailsClient from './components/ProductDetailsClient';
+import MainLayout from '../../layout'; // Aplicamos el layout de la tienda
 
-export default function MainLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+interface ProductPageProps {
+  params: {
+    productId: string;
+  };
+}
+
+async function ProductDetailsLoader(props: { params: ProductPageProps['params'] } ) {
+  const { productId } = props.params;
+  const product = await getProductById(productId);
+
+  if (!product) {
+    return (
+      // Este contenido se renderizará dentro del MainLayout
+      <div className="container mx-auto px-6 lg:px-8 py-12 text-center">
+        <h1 className="text-2xl font-semibold text-destructive mb-4">Producto no Encontrado</h1>
+        <p className="text-muted-foreground mb-6">
+          No pudimos encontrar un producto con el ID: <span className="font-semibold">{productId}</span>.
+        </p>
+        <Button asChild>
+          <Link href="/">
+            Volver al Catálogo
+          </Link>
+        </Button>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="bg-gray-800 text-white p-4 sticky top-0 z-40">
-        <nav className="container mx-auto flex justify-between items-center">
-          <a href="/catalog" className="text-xl font-bold hover:text-gray-300">NexusCommerce</a>
-          <div>
-            <a href="/catalog" className="hover:text-gray-300 px-3">Catálogo</a>
-            {/* <a href="/cart" className="hover:text-gray-300 px-3">Carrito</a> */}
-          </div>
-        </nav>
-      </header>
-      <main className="flex-grow container mx-auto px-4 py-8">
-        {children}
-      </main>
-      <footer className="bg-gray-200 text-center p-4 mt-auto">
-        © 2025 Mi E-commerce IA (Estudiantes)
-      </footer>
+    // Este contenido se renderizará dentro del MainLayout
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-12">
+      <ProductDetailsClient product={product as Product} />
     </div>
+  );
+}
+
+export default function ProductPage({ params }: ProductPageProps) {
+  return (
+    <MainLayout>
+      <ProductDetailsLoader params={params} />
+    </MainLayout>
   );
 }
